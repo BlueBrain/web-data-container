@@ -292,5 +292,49 @@ More examples can be found in the **tests** directory of this repository.
 
 
 # Comparison
-Before even having the intention to create the RandomAccessBuffer format, we looked what was available, but it turns out none of the format below was capable to handle what we needed:
-TODO
+Before even having the intention to create the RandomAccessBuffer format, we looked what was available, but it turns out none of the format below was capable to handle what we needed. The main feature we were looking for were:
+- fast/random access to data
+- multimodality
+- metadata support
+- n-dimensional raster/scientific data
+- schemaless
+- Easy to write a parser for the web (JS client side) as well as Python
+
+Here is the list of candidates we considered:
+
+- [HDF5](https://www.hdfgroup.org/solutions/hdf5/)
+  - complex hierarchical structure
+  - unconvenient metadata format
+  - hardly possible to parse when no using the official hdf5 lib
+
+- [FlatBuffers](https://google.github.io/flatbuffers/) (Google)
+  - requires a schema
+
+- [Protocol Buffers](https://developers.google.com/protocol-buffers/) (Google)
+  - requires a schema
+
+- [Parquet](https://parquet.apache.org/) (Apache)
+  - requires a schema
+
+- [Avro](https://avro.apache.org/) (Apache)
+  - requires a schema
+
+- [Ion](https://amzn.github.io/ion-docs/) (Amazon)
+  - requires a schema
+
+- [BSON](http://bsonspec.org/) (MongoDB)
+  - does not support arrays of typed numerical values (only untyped binary buffers)
+  - no random access
+
+- [UBJSON](http://ubjson.org/)
+  - no random access
+
+- [MessagePack](https://msgpack.org/)
+  - No random access
+
+This comparison is of course not complete and most often stops at the first missing feature found.
+
+Source:
+
+this Wikipedia article
+this comparison article
