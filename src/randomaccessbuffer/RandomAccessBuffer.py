@@ -13,6 +13,7 @@ import copy
 import struct
 from randomaccessbuffer import Tools
 from randomaccessbuffer.Dotdict import Dotdict
+from randomaccessbuffer.__version__ import __version__
 
 MAGIC_NUMBER = "rab"
 
@@ -103,6 +104,7 @@ SHORT_ENDIANNESS = {
 
 class RandomAccessBuffer:
     def __init__(self):
+        # print("version", __version__)
         self._working_dir = Tools.createWorkingDir()
         # print("working dir", self._working_dir)
         self._rab_index = []
