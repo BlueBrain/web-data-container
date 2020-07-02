@@ -8,6 +8,7 @@ import os
 import zlib
 import shutil
 import json
+import yaml
 import numpy as np
 import copy
 import struct
@@ -167,8 +168,15 @@ class RandomAccessBuffer:
 
     def _getObject(self, codec_meta):
         buffer = self._getDatasetAsByte(codec_meta)
-        json_str = buffer.decode("utf-8", "strict")
-        object = json.loads(json_str)
+        object_str = buffer.decode("utf-8", "strict")
+
+        # Try load it with YAML then if fails, try with json
+        # Note: YAML 1.2 is a superset of JSON except it does not like tabs
+        object = None
+        try:
+            object = yaml.load(object_str, Loader=yaml.Loader)
+        except yaml.scanner.ScannerError as e:
+            object = json.loads(object_str)
         return object
 
 
@@ -249,15 +257,15 @@ class RandomAccessBuffer:
         if not type(data) is dict:
             raise Exception("The dataset must be a dictionnary.")
 
-        # check that we will be able to write the metadata as json,
+        # check that we will be able to write the metadata as yaml,
         # this prevents things such as circular reference but still
         # allocating space for dataset.
         try:
-            json.dumps(metadata, ensure_ascii=False)
+            yaml.dump(metadata, Dumper=yaml.Dumper, allow_unicode=True)
         except Exception as e:
             raise e
 
-        bytes = json.dumps(data, ensure_ascii=False).encode("utf-8", "strict")
+        bytes = yaml.dump(metadata, Dumper=yaml.Dumper, allow_unicode=True).encode("utf-8", "strict")
 
 
         # create a hash name for this array and a path on disk to write it temporarily
@@ -303,11 +311,11 @@ class RandomAccessBuffer:
         if metadata and not type(metadata) is dict:
             raise Exception("Metadata are optional but must be a dictionnary when provided.")
 
-        # check that we will be able to write the metadata as json,
+        # check that we will be able to write the metadata as yaml,
         # this prevents things such as circular reference but still
         # allocating space for dataset.
         try:
-            json.dumps(metadata, ensure_ascii=False)
+            yaml.dump(metadata, Dumper=yaml.Dumper, allow_unicode=True)
         except Exception as e:
             raise e
 
@@ -338,11 +346,11 @@ class RandomAccessBuffer:
         if metadata and not type(metadata) is dict:
             raise Exception("Metadata are optional but must be a dictionnary when provided.")
 
-        # check that we will be able to write the metadata as json,
+        # check that we will be able to write the metadata as yaml,
         # this prevents things such as circular reference but still
         # allocating space for dataset.
         try:
-            json.dumps(metadata, ensure_ascii=False)
+            yaml.dump(metadata, Dumper = yaml.Dumper, allow_unicode=True)
         except Exception as e:
             raise e
 
@@ -400,11 +408,11 @@ class RandomAccessBuffer:
         if metadata and not type(metadata) is dict:
             raise Exception("Metadata are optional but must be a dictionnary when provided.")
 
-        # check that we will be able to write the metadata as json,
+        # check that we will be able to write the metadata as yaml,
         # this prevents things such as circular reference but still
         # allocating space for dataset.
         try:
-            json.dumps(metadata, ensure_ascii=False)
+            yaml.dump(metadata, Dumper = yaml.Dumper, allow_unicode=True)
         except Exception as e:
             raise e
 
@@ -452,11 +460,11 @@ class RandomAccessBuffer:
         if not isinstance(data, str):
             raise Exception("The dataset must be a string.")
 
-        # check that we will be able to write the metadata as json,
+        # check that we will be able to write the metadata as yaml,
         # this prevents things such as circular reference but still
         # allocating space for dataset.
         try:
-            json.dumps(metadata, ensure_ascii=False)
+            yaml.dump(metadata, Dumper=yaml.Dumper, allow_unicode=True)
         except Exception as e:
             raise e
 
@@ -652,7 +660,13 @@ class RandomAccessBuffer:
 
         # reading the index
         header_bytelength = struct.unpack('I', f.read(4))[0]
-        self._rab_index = json.loads(f.read(header_bytelength).decode("utf-8", "strict"))
+
+        # Try decoding in yaml, if fails, back to json (as the spec of RAB was originally using json)
+        header_str = f.read(header_bytelength).decode("utf-8", "strict")
+        try:
+            self._rab_index = yaml.load(header_str, Loader=yaml.Loader)
+        except yaml.scanner.ScannerError as e:
+            self._rab_index = json.loads(header_str)
 
         # the byte offset of the very first dataset
         self._data_byte_offset = 7 + header_bytelength
@@ -685,11 +699,11 @@ class RandomAccessBuffer:
             files_to_add.append(entry["filePath"])
             del entry["filePath"]
 
-        # Create a binary version of the json header.
+        # Create a binary version of the yaml header.
         # Note: the header is padded with a new line and a new line char is also
         # added at the end (before encoding) to ensure better readability of the
         # header with CLIs such as less/more
-        byte_metadata = ("\n" + json.dumps(index_copy, indent=2, ensure_ascii=False) + "\n").encode("utf-8", "strict")
+        byte_metadata = ("\n" + yaml.dump(index_copy, Dumper=yaml.Dumper, allow_unicode=True) + "\n").encode("utf-8", "strict")
         metadata_byte_length = len(byte_metadata)
 
         # write the metadata file

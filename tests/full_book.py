@@ -59,7 +59,7 @@ Tom and Huck go back to the cave and get that box of gold. They plan on hiding t
 def read(filepath):
     print("reading...")
     # create a RandomAccessBuffer instance
-    rabuff = rabRandomAccessBuffer()
+    rabuff = rab.RandomAccessBuffer()
 
     # read an existing RandomAccessBuffer file
     rabuff.read(filepath)
