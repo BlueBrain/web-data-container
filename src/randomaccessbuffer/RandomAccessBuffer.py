@@ -265,8 +265,8 @@ class RandomAccessBuffer:
         except Exception as e:
             raise e
 
-        bytes = yaml.dump(metadata, Dumper=yaml.Dumper, allow_unicode=True).encode("utf-8", "strict")
-
+        yaml_encoded = yaml.dump(data, Dumper=yaml.Dumper, allow_unicode=True)
+        bytes = yaml_encoded.encode("utf-8", "strict")
 
         # create a hash name for this array and a path on disk to write it temporarily
         hashedName = Tools.hashText(dataset_name)
