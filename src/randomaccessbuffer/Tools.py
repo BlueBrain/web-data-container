@@ -4,6 +4,8 @@ import string
 import tempfile
 import os
 import hashlib
+import json
+import numpy as np
 
 def randomString(stringLength=10):
     """
@@ -41,3 +43,20 @@ def getNumpyArrayEndianness(arr):
         return "big"
     else:
         return "na"
+
+
+class CustomJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
+# A safe object is an object that would serialize into safe yaml or safe json,
+# and deserialize properly in Python or Javascript.
+# This means turning numpy arrays into list, or simply crashing when safe is
+# not achievable.
+def make_safe_object(obj) :
+    json_serialized = json.dumps(obj, ensure_ascii = False,  cls = CustomJsonEncoder)
+    safe_dict = json.loads(json_serialized)
+    return safe_dict

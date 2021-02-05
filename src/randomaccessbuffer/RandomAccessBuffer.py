@@ -103,6 +103,7 @@ SHORT_ENDIANNESS = {
     "na": "<" # this is used for int8 and uint8
 }
 
+
 class RandomAccessBuffer:
     def __init__(self):
         # print("version", __version__)
@@ -257,15 +258,15 @@ class RandomAccessBuffer:
         if not type(data) is dict:
             raise Exception("The dataset must be a dictionnary.")
 
-        # check that we will be able to write the metadata as yaml,
-        # this prevents things such as circular reference but still
-        # allocating space for dataset.
-        try:
-            yaml.dump(metadata, Dumper=yaml.Dumper, allow_unicode=True)
-        except Exception as e:
-            raise e
+        # Make sure we can create a metadata object that can be understood by another language (JS)
+        # by converting nmpy arrays to list
+        safe_meta = Tools.make_safe_object(metadata)
 
-        yaml_encoded = yaml.dump(data, Dumper=yaml.Dumper, allow_unicode=True)
+        # Make sure we can create a data object that can be understood by another language (JS)
+        # by converting nmpy arrays to list
+        safe_data = Tools.make_safe_object(data)
+
+        yaml_encoded = yaml.dump(safe_data, Dumper=yaml.Dumper, allow_unicode=True)
         bytes = yaml_encoded.encode("utf-8", "strict")
 
         # create a hash name for this array and a path on disk to write it temporarily
@@ -283,7 +284,7 @@ class RandomAccessBuffer:
         dataset_meta = {
             "name": dataset_name,
             "filePath": file_path,
-            "metadata": metadata,
+            "metadata": safe_meta,
             "codecMeta": {
                 "byteOffset": None, # computed at write time
                 "byteLength": byte_length,
@@ -311,13 +312,9 @@ class RandomAccessBuffer:
         if metadata and not type(metadata) is dict:
             raise Exception("Metadata are optional but must be a dictionnary when provided.")
 
-        # check that we will be able to write the metadata as yaml,
-        # this prevents things such as circular reference but still
-        # allocating space for dataset.
-        try:
-            yaml.dump(metadata, Dumper=yaml.Dumper, allow_unicode=True)
-        except Exception as e:
-            raise e
+        # Make sure we can create a metadata object that can be understood by another language (JS)
+        # by converting nmpy arrays to list
+        safe_meta = Tools.make_safe_object(metadata)
 
         if not os.path.exists(filepath):
             raise Exception("The file {} does not exist.".format(filepath))
@@ -326,7 +323,7 @@ class RandomAccessBuffer:
         dataset_meta = {
             "name": dataset_name,
             "filePath": filepath,
-            "metadata": metadata,
+            "metadata": safe_meta,
             "codecMeta": {
                 "byteOffset": None, # computed at write time
                 "byteLength": os.path.getsize(filepath),
@@ -345,14 +342,10 @@ class RandomAccessBuffer:
 
         if metadata and not type(metadata) is dict:
             raise Exception("Metadata are optional but must be a dictionnary when provided.")
-
-        # check that we will be able to write the metadata as yaml,
-        # this prevents things such as circular reference but still
-        # allocating space for dataset.
-        try:
-            yaml.dump(metadata, Dumper = yaml.Dumper, allow_unicode=True)
-        except Exception as e:
-            raise e
+        
+        # Make sure we can create a metadata object that can be understood by another language (JS)
+        # by converting nmpy arrays to list
+        safe_meta = Tools.make_safe_object(metadata)
 
         # create a hash name for this array and a path on disk to write it temporarily
         hashedName = Tools.hashText(dataset_name)
@@ -376,7 +369,7 @@ class RandomAccessBuffer:
         dataset_meta = {
             "name": dataset_name,
             "filePath": file_path,
-            "metadata": metadata,
+            "metadata": safe_meta,
             "codecMeta": {
                 "shape": list(data.shape), # rather than using dimension. Even with array 1D, shape is a list (eg. [2, 2], or [12], etc.)
                 "strides": strides,
@@ -408,13 +401,9 @@ class RandomAccessBuffer:
         if metadata and not type(metadata) is dict:
             raise Exception("Metadata are optional but must be a dictionnary when provided.")
 
-        # check that we will be able to write the metadata as yaml,
-        # this prevents things such as circular reference but still
-        # allocating space for dataset.
-        try:
-            yaml.dump(metadata, Dumper = yaml.Dumper, allow_unicode=True)
-        except Exception as e:
-            raise e
+        # Make sure we can create a metadata object that can be understood by another language (JS)
+        # by converting nmpy arrays to list
+        safe_meta = Tools.make_safe_object(metadata)
 
         # create a hash name for this array and a path on disk to write it temporarily
         hashedName = Tools.hashText(dataset_name)
@@ -432,7 +421,7 @@ class RandomAccessBuffer:
         dataset_meta = {
             "name": dataset_name,
             "filePath": file_path,
-            "metadata": metadata,
+            "metadata": safe_meta,
             "codecMeta": {
                 "byteOffset": None, # computed at write time
                 "byteLength": byte_length,
@@ -460,13 +449,9 @@ class RandomAccessBuffer:
         if not isinstance(data, str):
             raise Exception("The dataset must be a string.")
 
-        # check that we will be able to write the metadata as yaml,
-        # this prevents things such as circular reference but still
-        # allocating space for dataset.
-        try:
-            yaml.dump(metadata, Dumper=yaml.Dumper, allow_unicode=True)
-        except Exception as e:
-            raise e
+        # Make sure we can create a metadata object that can be understood by another language (JS)
+        # by converting nmpy arrays to list
+        safe_meta = Tools.make_safe_object(metadata)
 
         # create a hash name for this array and a path on disk to write it temporarily
         hashedName = Tools.hashText(dataset_name)
@@ -486,7 +471,7 @@ class RandomAccessBuffer:
         dataset_meta = {
             "name": dataset_name,
             "filePath": file_path,
-            "metadata": metadata,
+            "metadata": safe_meta,
             "codecMeta": {
                 "byteOffset": None, # computed at write time
                 "byteLength": byte_length,
@@ -526,7 +511,7 @@ class RandomAccessBuffer:
         elif data == None and isinstance(filepath, str):
             return self.addFile(dataset_name=dataset_name, filepath=filepath, metadata=metadata)
         else:
-            raise Exception("The type of dataset could not be determined.")
+            raise Exception("The type of dataset could not be determined: ", type(data))
 
 
 
