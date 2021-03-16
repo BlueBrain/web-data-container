@@ -60,3 +60,19 @@ def make_safe_object(obj) :
     json_serialized = json.dumps(obj, ensure_ascii = False,  cls = CustomJsonEncoder)
     safe_dict = json.loads(json_serialized)
     return safe_dict
+
+
+def get_smallest_integer_dtype(arr):
+    # All the dtypes we want to check, order matters
+    integer_dtypes = [
+        np.uint8, np.int8, np.uint16, np.int16,
+        np.uint32, np.int32, np.uint64, np.int64
+    ]
+
+    for dtype in integer_dtypes:
+        info = np.iinfo(dtype)
+        if np.amin(arr) >= info.min and np.amax(arr) <= info.max:
+            return dtype
+    
+    # Worst case scenario, just stay as it already is
+    return arr.dtype
