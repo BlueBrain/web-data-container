@@ -8,9 +8,10 @@ RAB is a container format, rather generic but originally thought for containing 
 - multi-dataset, multi modality
 - Each dataset is identified by a string of the user's choice. This name or id is unique in a RAB file
 - Optimised for numerical typed datasets (single numbers and arrays or numbers, multidimensional, any type from uint8 to float64)
-- Datasets can also be objects (utf-8 JSON, binary encoded, optionally compressed)
-- Datasets can also be text (utf-8, binary encoded, optionally compressed)
-- Datasets can also be blobs/bytes/files, just like an archive (optionally compressed)
+- Datasets can be objects (utf-8 JSON, binary encoded, optionally compressed)
+- Datasets can be text (utf-8, binary encoded, optionally compressed)
+- Datasets can be blobs/bytes/files, just like an archive (optionally compressed)
+- Datasets can be tablar data (i.g. Pandas Dataframe fonr a CSV file) with columns of viarious types (optionally compressed)
 - Each dataset can be linked to as many metadata as necessary (utf-8 JSON, with arrays, complex objects, numbers and strings)
 - Fast random access to any dataset: no need to read/parse the whole file to access a specific dataset
 - Deep random access within numerical datasets: can pick a single value within a numerical dataset, given its N-dimensional position, without having to load the whole dataset in memory (good for lookups)
@@ -290,6 +291,8 @@ for id in dataset_ids:
 
 More examples can be found in the **tests** directory of this repository.
 
+# Examples
+As a reference, many examples can be found in the `examples` folder. Some are using data generated from the source itself, some others are using input files.
 
 # Comparison
 Before even having the intention to create the RandomAccessBuffer format, we looked what was available, but it turns out none of the format below was capable to handle what we needed. The main feature we were looking for were:

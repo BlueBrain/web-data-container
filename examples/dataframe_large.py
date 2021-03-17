@@ -26,13 +26,13 @@ def create(filepath):
     }
 
     # Adding strings to the dataframe (takes much longer to encode)
-    # list_of_rand_str = []
-    # for i in range(0, row):
-    #     # s = np.random.choice(ALPHABET, size = int(1 + np.random.rand(1)[0] * 99))
-    #     s = ''.join(random.choice(ALPHABET) for i in range(int(1 + np.random.rand(1)[0] * 99)))
-    #     list_of_rand_str.append(s)
+    list_of_rand_str = []
+    for i in range(0, row):
+        # s = np.random.choice(ALPHABET, size = int(1 + np.random.rand(1)[0] * 99))
+        s = ''.join(random.choice(ALPHABET) for i in range(int(1 + np.random.rand(1)[0] * 99)))
+        list_of_rand_str.append(s)
     
-    # df_columns["some_str"] = list_of_rand_str
+    df_columns["some_str"] = list_of_rand_str
     # print(df_columns)
 
     print("Creating Pandas DF...")
