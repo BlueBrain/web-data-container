@@ -336,8 +336,3 @@ Here is the list of candidates we considered:
   - No random access
 
 This comparison is of course not complete and most often stops at the first missing feature found.
-
-Source:
-
-this Wikipedia article
-this comparison article
