@@ -1,7 +1,8 @@
 """
 
     TODO:
-    - zlib provides a way to stream compress/decompress for buffer that don't fit in memory
+    - zlib provides a way to stream compress/decompress for buffer that don't
+    fit in memory
 """
 
 import os
