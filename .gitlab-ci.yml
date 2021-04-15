@@ -1,11 +1,8 @@
-image: alpine:latest
-
-pages:
-  stage: deploy
+pytest:
+  stage: test
   script:
-  - echo 'Nothing to do...'
+    - pytest --junitxml=report.xml
   artifacts:
-    paths:
-    - public
-  only:
-  - master
+    when: always
+    reports:
+      junit: report.xml
