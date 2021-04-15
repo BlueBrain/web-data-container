@@ -1,11 +1,16 @@
-image: alpine:latest
+image: "python:3.8"
 
-pages:
-  stage: deploy
+before_script:
+  - python -v                                   # Print out Python version for debugging
+  - pip install -r requirements.txt
+  - pip install -r test-requirements.txt
+
+
+stages:
+  - test
+  
+test_job:
+  stage: test
+  image: "python:3.8"
   script:
-  - echo 'Nothing to do...'
-  artifacts:
-    paths:
-    - public
-  only:
-  - master
+    - python setup.py test
