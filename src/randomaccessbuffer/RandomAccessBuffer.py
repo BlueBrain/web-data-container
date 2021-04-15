@@ -171,7 +171,7 @@ class RandomAccessBuffer:
         column_info = codec_meta["columnInfo"]
 
         if len(column_info) != nb_col:
-            raise Exception("Decoding failed due to inconsistant number of columns in metadata.")
+            raise IndexError("Decoding failed due to inconsistant number of columns in metadata.")
 
         df_columns = {}
         byte_offset = 0
@@ -212,7 +212,7 @@ class RandomAccessBuffer:
 
             # An unknown type is raising an issue
             else:
-                raise Exception("Unknown column data type.")
+                raise ValueError("Unknown column data type.")
 
             df_columns[col_name] = column_data
 
@@ -280,7 +280,7 @@ class RandomAccessBuffer:
 
     def getDatasetType(self, dataset_name):
         if not self.hasDataset(dataset_name):
-            raise Exception("The dataset {} does not exists.".format(dataset_name))
+            raise KeyError("The dataset {} does not exists.".format(dataset_name))
 
         entry = self._getEntry(dataset_name)
         return entry["codecMeta"]["type"]
@@ -291,13 +291,13 @@ class RandomAccessBuffer:
         Add an object, that must be a dictionnary
         """
         if self.hasDataset(dataset_name):
-            raise Exception("The dataset {} already exists.".format(dataset_name))
+            raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise Exception("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
 
         if not type(data) is dict:
-            raise Exception("The dataset must be a dictionnary.")
+            raise ValueError("The dataset must be a dictionnary.")
 
         # Make sure we can create a metadata object that can be understood by another language (JS)
         # by converting nmpy arrays to list
@@ -348,17 +348,17 @@ class RandomAccessBuffer:
         Adds a file
         """
         if self.hasDataset(dataset_name):
-            raise Exception("The dataset {} already exists.".format(dataset_name))
+            raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise Exception("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
 
         # Make sure we can create a metadata object that can be understood by another language (JS)
         # by converting nmpy arrays to list
         safe_meta = Tools.make_safe_object(metadata)
 
         if not os.path.exists(filepath):
-            raise Exception("The file {} does not exist.".format(filepath))
+            raise KeyError("The file {} does not exist.".format(filepath))
 
         # Create the metadata entry
         dataset_meta = {
@@ -379,10 +379,10 @@ class RandomAccessBuffer:
         Add a Numpy array/ndarray
         """
         if self.hasDataset(dataset_name):
-            raise Exception("The dataset {} already exists.".format(dataset_name))
+            raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise Exception("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
         
         # Make sure we can create a metadata object that can be understood by another language (JS)
         # by converting nmpy arrays to list
@@ -437,10 +437,10 @@ class RandomAccessBuffer:
         Add a generic buffer (bytes)
         """
         if self.hasDataset(dataset_name):
-            raise Exception("The dataset {} already exists.".format(dataset_name))
+            raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise Exception("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
 
         # Make sure we can create a metadata object that can be understood by another language (JS)
         # by converting nmpy arrays to list
@@ -482,13 +482,13 @@ class RandomAccessBuffer:
 
     def addText(self, dataset_name, data, metadata={}, compress=None):
         if self.hasDataset(dataset_name):
-            raise Exception("The dataset {} already exists.".format(dataset_name))
+            raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise Exception("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
 
         if not isinstance(data, str):
-            raise Exception("The dataset must be a string.")
+            raise ValueError("The dataset must be a string.")
 
         # Make sure we can create a metadata object that can be understood by another language (JS)
         # by converting nmpy arrays to list
@@ -532,13 +532,13 @@ class RandomAccessBuffer:
 
     def addDataframe(self, dataset_name, data, metadata={}, compress=None, force_type_compatibility = True):
         if self.hasDataset(dataset_name):
-            raise Exception("The dataset {} already exists.".format(dataset_name))
+            raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise Exception("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
 
         if not isinstance(data, pd.DataFrame):
-            raise Exception("The dataset must be a Pandas DataFrame.")
+            raise ValueError("The dataset must be a Pandas DataFrame.")
 
         # Make sure we can create a metadata object that can be understood by another language (JS)
         # by converting nmpy arrays to list
@@ -556,7 +556,7 @@ class RandomAccessBuffer:
         (nb_row, nb_col) = df.shape
 
         if nb_row <= 0:
-            raise Exception("The Pandas DataFrame has zero row.")
+            raise ValueError("The Pandas DataFrame has zero row.")
 
         column_info = []
 
@@ -623,7 +623,7 @@ class RandomAccessBuffer:
 
             # Data is of an unsupported type
             else:
-                raise Exception(f"Column {col_name} is of an unsupported type: {np.dtype(data.dtype).name}")
+                raise ValueError(f"Column {col_name} is of an unsupported type: {np.dtype(data.dtype).name}")
 
             column_info.append(item)
 
@@ -681,7 +681,7 @@ class RandomAccessBuffer:
         elif data == None and isinstance(filepath, str):
             return self.addFile(dataset_name=dataset_name, filepath=filepath, metadata=metadata)
         else:
-            raise Exception("The type of dataset could not be determined: ", type(data))
+            raise ValueError("The type of dataset could not be determined: ", type(data))
 
 
     def digNumericalDataset(self, dataset_name, position):
@@ -692,15 +692,15 @@ class RandomAccessBuffer:
         entry = self._getEntry(dataset_name)
 
         if not entry:
-            raise Exception("The dataset {} does not exist.".format(dataset_name))
+            raise KeyError("The dataset {} does not exist.".format(dataset_name))
 
         codec_meta = entry["codecMeta"]
 
         if codec_meta["type"] not in TYPES.NUMERICALS:
-            raise Exception("Only numerical datasets can be dug in.")
+            raise ValueError("Only numerical datasets can be dug in.")
 
         if "compression" in codec_meta and codec_meta["compression"] != None:
-            raise Exception("The dataset is compressed, digging is not possible. You can use .getDataset() and then use it as Numpy array.")
+            raise ValueError("The dataset is compressed, digging is not possible. You can use .getDataset() and then use it as Numpy array.")
 
         # transform position into a list for consistency
         if type(position) == int or type(position) == float:
@@ -716,14 +716,14 @@ class RandomAccessBuffer:
         shape = codec_meta["shape"]
         nb_dimensions = len(shape)
         if len(position) != nb_dimensions:
-            raise Exception("The dataset is {}-dimensional, the position must also have {} dimensions.".format(nb_dimensions, nb_dimensions))
+            raise IndexError("The dataset is {}-dimensional, the position must also have {} dimensions.".format(nb_dimensions, nb_dimensions))
 
         bytes_per_elem = np.dtype(codec_meta["type"]).itemsize
         elements_to_jump = 0
 
         for d in range(0, nb_dimensions):
             if position[d] < 0 or position[d] >= shape[d]:
-                raise Exception("The position {} is out of range. This axis range is [0, {}]".format(position[d], shape[d]-1))
+                raise IndexError("The position {} is out of range. This axis range is [0, {}]".format(position[d], shape[d]-1))
             elements_to_jump += strides[d] * position[d]
 
         byte_offset_from_dataset_start = int(bytes_per_elem) * elements_to_jump
@@ -753,12 +753,12 @@ class RandomAccessBuffer:
         entry = self._getEntry(dataset_name)
 
         if not entry:
-            raise Exception("The dataset {} does not exist.".format(dataset_name))
+            raise KeyError("The dataset {} does not exist.".format(dataset_name))
 
         codec_meta = entry["codecMeta"]
 
         if byte_offset < 0 or (byte_offset + byte_length) > codec_meta["byteLength"]:
-            raise Exception("The byte offset and byte length are out of range")
+            raise IndexError("The byte offset and byte length are out of range")
 
         total_byte_offset = self._data_byte_offset + codec_meta["byteOffset"] + byte_offset
 
@@ -810,7 +810,7 @@ class RandomAccessBuffer:
         magic = f.read(3).decode()
 
         if magic != MAGIC_NUMBER:
-            raise Exception("The file is not a RandomAccessBuffer.")
+            raise ValueError("The file is not a RandomAccessBuffer.")
 
         # reading the index
         header_bytelength = struct.unpack('I', f.read(4))[0]
