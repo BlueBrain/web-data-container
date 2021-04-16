@@ -72,5 +72,6 @@ def test():
     assert json.dumps(meta_in, sort_keys=True) == json.dumps(meta_out, sort_keys=True)
     assert hashlib.md5(data_in).hexdigest() == hashlib.md5(data_out).hexdigest()
 
+
 if __name__ == "__main__":
     test()
