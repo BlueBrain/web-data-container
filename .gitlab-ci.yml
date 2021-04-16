@@ -1,9 +1,11 @@
 image: "python:3.8"
 
 before_script:
-  - python -v                                   # Print out Python version for debugging
+  - python -v
   - pip install -r requirements.txt
   - pip install -r test-requirements.txt
+  - pip install -r docs/requirements.txt
+  # - make -C docs html
 
 
 stages:

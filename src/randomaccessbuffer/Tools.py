@@ -1,3 +1,8 @@
+"""
+    The Tool module is composed of system functions that should only be used by
+    the main RandomAccessBuffer module and not externaly. Please ginore this module.
+"""
+
 import sys
 import random
 import string
@@ -7,9 +12,14 @@ import hashlib
 import json
 import numpy as np
 
+
+
 def randomString(stringLength=10):
     """
-    Generate a random string of fixed length
+    Generate a random string of fixed length containing only ascii lowercase characters.
+
+    Args:
+        stringLength (int): the length of the random string to generate
     """
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
@@ -17,7 +27,7 @@ def randomString(stringLength=10):
 
 def createWorkingDir():
     """
-    Create a working directory in what is flagged as the temp dir by the system
+        Create a working directory in what is flagged as the temp dir by the system.
     """
     work_dir_path = os.path.join(tempfile.gettempdir(), "_RAB_" + randomString())
     os.makedirs(work_dir_path)    
@@ -25,11 +35,30 @@ def createWorkingDir():
 
 
 def isValidDatasetName(name):
+    """
+        Checks if the given dataset name is valid.
+        A valid dataset name contains only ASCII lowercase, ASCII uppercase !@#$%^&()_-=+[]{},. and whitespaces.
+
+        Args:
+            name (string): the dataset name to be checked
+        
+        Returns:
+            bool: True for a valid name, False for invalid
+    """
     allowed = set(string.ascii_uppercase + string.ascii_lowercase + string.digits + '!@#$%^&()_-=+[]{},. ')
     return set(name) <= allowed
 
 
 def hashText(text):
+    """
+        Hashes a text with md5.
+
+        Args:
+            text (string): a string to hash.
+
+        Returns:
+            string
+    """
     result = hashlib.md5(str(text).encode())
     return result.hexdigest()
 
@@ -46,7 +75,14 @@ def getNumpyArrayEndianness(arr):
 
 
 class CustomJsonEncoder(json.JSONEncoder):
+    """
+        This JSON encoder replaces the Numpy arrays by Python lists.
+        It is used only in the context of encoding metadata, not data.
+    """
     def default(self, obj):
+        """
+            Overload of the default interface to swap every np.ndarray with their list counterpart.
+        """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
