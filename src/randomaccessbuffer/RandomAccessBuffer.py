@@ -572,7 +572,7 @@ class RandomAccessBuffer:
             }
 
             # special case for strings: we check which one is the longest (in bytes within the )
-            if data.dtype == np.object:
+            if data.dtype == object:
                 item["endianess"] = Tools.getNumpyArrayEndianness(data)
                 item["originalType"] = "text"
                 item["encodingType"] = "text"
@@ -587,12 +587,12 @@ class RandomAccessBuffer:
                     s_byte_size = len(s.encode('utf-8'))
                     data[i] = s + (max_byte_size - s_byte_size) * '\0'
                     byte_arr += data[i].encode('utf-8')
-                
+        
             # special case for booleans: saved as uint8
-            elif data.dtype == np.bool:
+            elif data.dtype == bool:
                 item["endianess"] = Tools.getNumpyArrayEndianness(data)
                 data = data.astype(np.uint8)
-                item["originalType"] = np.dtype(np.bool).name
+                item["originalType"] = np.dtype(bool).name
                 item["encodingType"] = np.dtype(np.uint8).name
                 byte_arr += data.tobytes()
 

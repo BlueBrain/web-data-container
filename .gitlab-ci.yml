@@ -12,5 +12,6 @@ stages:
 test_job:
   stage: test
   image: "python:3.8"
+  coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
   script:
     - python setup.py test
