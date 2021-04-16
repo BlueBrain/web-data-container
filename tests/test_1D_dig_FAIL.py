@@ -38,7 +38,7 @@ def read(filepath):
 
 
 
-def test_1D_dig():
+def test():
     filepath = "./tests/temp/1D_dig_FAIL.rab"
     value_in = create(filepath)
 

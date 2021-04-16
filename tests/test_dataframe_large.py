@@ -74,7 +74,7 @@ def read(filepath):
 
 
 
-def test_dataframe_large():
+def test():
     filepath = "./tests/temp/dataframe_large.rab"
     (data_in, meta_in) = create(filepath)
     (data_out, meta_out) = read(filepath)

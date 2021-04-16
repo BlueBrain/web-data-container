@@ -50,7 +50,7 @@ def read(filepath):
     return (data, meta)
 
 
-def test_2D():
+def test():
     filepath = "./tests/temp/2D.rab"
     (data_in, meta_in) = create(filepath)
     (data_out, meta_out) = read(filepath)

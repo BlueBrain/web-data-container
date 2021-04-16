@@ -42,7 +42,7 @@ def read(filepath):
     print("index:", index, " value:", value)
 
 
-def test_1D_dig():
+def test():
     filepath = "./tests/temp/1D_dig.rab"
     value_in = create(filepath)
     value_out = read(filepath)

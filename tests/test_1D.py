@@ -4,7 +4,7 @@ import randomaccessbuffer as rab
 
 
 
-def test_1D():
+def test():
     filepath = "./tests/temp/1D.rab"
 
     # print("creating...")
