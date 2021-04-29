@@ -5,11 +5,12 @@ before_script:
   - pip install -r requirements.txt
   - pip install -r test-requirements.txt
 
+
 stages:
-  - runTests
+  - test
   
-runTests:
-  stage: runTests
+test:
+  stage: test
   coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
   script:
-    - pytest
+    - python setup.py test
