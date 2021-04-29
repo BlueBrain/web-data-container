@@ -9,6 +9,7 @@ stages:
   - runTests
   
 runTests:
+  stage: runTests
   coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
   script:
     - pytest
