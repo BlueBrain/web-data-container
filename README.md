@@ -335,4 +335,4 @@ Here is the list of candidates we considered:
 - [MessagePack](https://msgpack.org/)
   - No random access
 
-This comparison is of course not complete and most often stops at the first missing feature found
+This comparison is of course not complete and most often stops at the first missing feature found.
