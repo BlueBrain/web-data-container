@@ -1,8 +1,7 @@
 image: "python:3.8"
 
-# before_script:
-  # - python -v
-  # - pip install -r requirements.txt
+before_script:
+  - pip install -r requirements.txt
 
 stages:
   - test
