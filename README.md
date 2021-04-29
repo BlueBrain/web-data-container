@@ -1,5 +1,5 @@
 # Random Access Buffer
-This repository contains the Python codec for RandomAccessBuffer (RAB) file format.  
+This repository contains the Python codec for RandomAccessBuffer (RAB) file format  
 
 # What's RAB?
 RAB is a container format, rather generic but originally thought for containing scientific datasets where precision and integrity matters. It is close to HDF5 and yet very far. It can handle multiple datasets with their metadata ubt contrary to HDF5 it is very easy to decode, even from within a web browser in JS.
