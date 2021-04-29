@@ -1,7 +1,6 @@
 image: "python:3.8"
 
 before_script:
-  # - pip install -r requirements.txt
   - pip install .
 
 stages:
@@ -11,5 +10,4 @@ test:
   stage: test
   coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
   script:
-    # - python setup.py test
     - pytest
