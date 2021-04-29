@@ -1,5 +1,4 @@
 """
-
     TODO:
     - zlib provides a way to stream compress/decompress for buffer that don't
     fit in memory
@@ -20,71 +19,75 @@ from randomaccessbuffer.__version__ import __version__
 
 MAGIC_NUMBER = "rab"
 
-TYPES = Dotdict({
-    "BUFFER": "bytes",
-    "OBJECT": "object",
-    "TEXT": "text",
-    "NUMERICALS": [
-        "bool",
-        "int8",
-        "uint8",
-        "int16",
-        "uint16",
-        "int32",
-        "uint32",
-        "int64",
-        "uint64",
-        "float16",
-        "float32",
-        "float64",
-        "complex64",
-        "complex128"
-    ],
-    "DATAFRAME": "dataframe"
-})
+TYPES = Dotdict(
+    {
+        "BUFFER": "bytes",
+        "OBJECT": "object",
+        "TEXT": "text",
+        "NUMERICALS": [
+            "bool",
+            "int8",
+            "uint8",
+            "int16",
+            "uint16",
+            "int32",
+            "uint32",
+            "int64",
+            "uint64",
+            "float16",
+            "float32",
+            "float64",
+            "complex64",
+            "complex128",
+        ],
+        "DATAFRAME": "dataframe",
+    }
+)
 
 
-SHORT_NUMERICAL_TYPES = Dotdict({
-    "bool": "b",
-    "int8": "i1",
-    "uint8": "u1",
-    "int16": "i2",
-    "uint16": "u2",
-    "int32": "i4",
-    "uint32" : "u4",
-    "int64": "i8",
-    "uint64": "u8",
-    "float16": "f2",
-    "float32": "f4",
-    "float64": "f8",
-    "complex64": "c8",
-    "complex128": "c16"
-})
+SHORT_NUMERICAL_TYPES = Dotdict(
+    {
+        "bool": "b",
+        "int8": "i1",
+        "uint8": "u1",
+        "int16": "i2",
+        "uint16": "u2",
+        "int32": "i4",
+        "uint32": "u4",
+        "int64": "i8",
+        "uint64": "u8",
+        "float16": "f2",
+        "float32": "f4",
+        "float64": "f8",
+        "complex64": "c8",
+        "complex128": "c16",
+    }
+)
 
-UNPACK_TYPES = Dotdict({
-    "bool": "?",
-    "int8": "b",
-    "uint8": "B",
-    "int16": "h",
-    "uint16": "H",
-    "int32": "i",
-    "uint32" : "I",
-    "int64": "q",
-    "uint64": "Q",
-    "float16": "XXXXXXX", # not existing
-    "float32": "f",
-    "float64": "d",
-    "complex64": "XXXXXXX", # should be dealt with 2 float32 (TODO)
-    "complex128": "XXXXXXX" # should be dealt with 2 double (TODO)
-})
+UNPACK_TYPES = Dotdict(
+    {
+        "bool": "?",
+        "int8": "b",
+        "uint8": "B",
+        "int16": "h",
+        "uint16": "H",
+        "int32": "i",
+        "uint32": "I",
+        "int64": "q",
+        "uint64": "Q",
+        "float16": "XXXXXXX",  # not existing
+        "float32": "f",
+        "float64": "d",
+        "complex64": "XXXXXXX",  # should be dealt with 2 float32 (TODO)
+        "complex128": "XXXXXXX",  # should be dealt with 2 double (TODO)
+    }
+)
 
 NO_ENDIANESS = "na"
 
-SHORT_ENDIANNESS = Dotdict({
-    "little": "<",
-    "big": ">",
-    NO_ENDIANESS: "<" # this is used for int8 and uint8
-})
+SHORT_ENDIANNESS = Dotdict(
+    {"little": "<", "big": ">", NO_ENDIANESS: "<"}  # this is used for int8 and uint8
+)
 
 
 class RandomAccessBuffer:
@@ -94,13 +97,11 @@ class RandomAccessBuffer:
         # print("working dir", self._working_dir)
         self._rab_index = []
         self._data_byte_offset = None
-        self._filepath = None # for reading
+        self._filepath = None  # for reading
         self._onDone = None
-
 
     def onDone(self, fn):
         self._onDone = fn
-
 
     def __del__(self):
         """
@@ -111,13 +112,11 @@ class RandomAccessBuffer:
         if self._onDone:
             self._onDone()
 
-
     def listDatasets(self):
         names = []
         for entry in self._rab_index:
             names.append(entry["name"])
         return names
-
 
     def _getDatasetAsByte(self, codec_meta):
         """
@@ -134,21 +133,21 @@ class RandomAccessBuffer:
             buffer = zlib.decompress(buffer)
         return buffer
 
-
     def _getNumericalDataset(self, codec_meta):
         buffer = self._getDatasetAsByte(codec_meta)
         # The short type can be prepended with a < or > to add endianness info
-        short_type = SHORT_ENDIANNESS[codec_meta["endianness"]] + SHORT_NUMERICAL_TYPES[codec_meta["type"]]
+        short_type = (
+            SHORT_ENDIANNESS[codec_meta["endianness"]]
+            + SHORT_NUMERICAL_TYPES[codec_meta["type"]]
+        )
         arr = np.frombuffer(buffer, dtype=short_type)
         arr.shape = codec_meta["shape"]
         return arr
-
 
     def _getText(self, codec_meta):
         buffer = self._getDatasetAsByte(codec_meta)
         text = buffer.decode("utf-8", "strict")
         return text
-
 
     def _getObject(self, codec_meta):
         buffer = self._getDatasetAsByte(codec_meta)
@@ -163,7 +162,6 @@ class RandomAccessBuffer:
             object = json.loads(object_str)
         return object
 
-
     def _getDataframe(self, codec_meta):
         buffer = self._getDatasetAsByte(codec_meta)
         nb_row = codec_meta["rows"]
@@ -171,7 +169,9 @@ class RandomAccessBuffer:
         column_info = codec_meta["columnInfo"]
 
         if len(column_info) != nb_col:
-            raise IndexError("Decoding failed due to inconsistant number of columns in metadata.")
+            raise IndexError(
+                "Decoding failed due to inconsistant number of columns in metadata."
+            )
 
         df_columns = {}
         byte_offset = 0
@@ -188,26 +188,40 @@ class RandomAccessBuffer:
             if encoding_type in TYPES.NUMERICALS:
                 bytes_per_elem = np.dtype(encoding_type).itemsize
                 column_byte_length = bytes_per_elem * nb_row
-                bytes_for_this_column = buffer[byte_offset:byte_offset + column_byte_length]
+                bytes_for_this_column = buffer[
+                    byte_offset : byte_offset + column_byte_length
+                ]
 
-                short_encoding_type = SHORT_ENDIANNESS[endianess] + SHORT_NUMERICAL_TYPES[encoding_type]
-                short_original_type = SHORT_ENDIANNESS[endianess] + SHORT_NUMERICAL_TYPES[original_type]
+                short_encoding_type = (
+                    SHORT_ENDIANNESS[endianess] + SHORT_NUMERICAL_TYPES[encoding_type]
+                )
+                short_original_type = (
+                    SHORT_ENDIANNESS[endianess] + SHORT_NUMERICAL_TYPES[original_type]
+                )
 
                 if endianess == NO_ENDIANESS:
                     short_original_type = original_type
 
-                column_data = np.frombuffer(bytes_for_this_column, dtype=short_encoding_type).astype(short_original_type)
+                column_data = np.frombuffer(
+                    bytes_for_this_column, dtype=short_encoding_type
+                ).astype(short_original_type)
                 byte_offset += column_byte_length
 
             # Decoding strings
             elif encoding_type in TYPES.TEXT:
                 bytes_per_elem = col_info["maxByteSize"]
                 column_byte_length = bytes_per_elem * nb_row
-                bytes_for_this_column = buffer[byte_offset:byte_offset + column_byte_length]
+                bytes_for_this_column = buffer[
+                    byte_offset : byte_offset + column_byte_length
+                ]
                 column_data = []
                 for byte_start in range(0, column_byte_length, bytes_per_elem):
-                    elem_bytes = bytes_for_this_column[byte_start:byte_start + bytes_per_elem]
-                    column_data.append(elem_bytes.decode("utf-8", "strict").rstrip('\0'))
+                    elem_bytes = bytes_for_this_column[
+                        byte_start : byte_start + bytes_per_elem
+                    ]
+                    column_data.append(
+                        elem_bytes.decode("utf-8", "strict").rstrip("\0")
+                    )
                 byte_offset += column_byte_length
 
             # An unknown type is raising an issue
@@ -218,7 +232,6 @@ class RandomAccessBuffer:
 
         df = pd.DataFrame(df_columns)
         return df
-
 
     def getDataset(self, dataset_name):
         entry = self._getEntry(dataset_name)
@@ -241,7 +254,6 @@ class RandomAccessBuffer:
 
         return (data, entry["metadata"])
 
-
     def _getEntry(self, dataset_name):
         """
         Get the entry for a given dataset. Including metadata and codecMeta
@@ -251,7 +263,6 @@ class RandomAccessBuffer:
                 return entry
         return None
 
-
     def getMetadata(self, dataset_name):
         """
         Get the metadata (provided by the user) of a given dataset
@@ -260,8 +271,6 @@ class RandomAccessBuffer:
         if entry:
             return entry["metadata"]
         return None
-
-
 
     def getTotalByteSize(self):
         """
@@ -273,10 +282,8 @@ class RandomAccessBuffer:
 
         return total
 
-
     def deleteDataset(self, dataset_name):
         pass
-
 
     def getDatasetType(self, dataset_name):
         if not self.hasDataset(dataset_name):
@@ -284,7 +291,6 @@ class RandomAccessBuffer:
 
         entry = self._getEntry(dataset_name)
         return entry["codecMeta"]["type"]
-
 
     def addObject(self, dataset_name, data, metadata={}, compress=None):
         """
@@ -294,7 +300,9 @@ class RandomAccessBuffer:
             raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError(
+                "Metadata are optional but must be a dictionnary when provided."
+            )
 
         if not type(data) is dict:
             raise ValueError("The dataset must be a dictionnary.")
@@ -327,11 +335,11 @@ class RandomAccessBuffer:
             "filePath": file_path,
             "metadata": safe_meta,
             "codecMeta": {
-                "byteOffset": None, # computed at write time
+                "byteOffset": None,  # computed at write time
                 "byteLength": byte_length,
                 "type": TYPES.OBJECT,
                 "compression": compress,
-            }
+            },
         }
 
         self._rab_index.append(dataset_meta)
@@ -342,7 +350,6 @@ class RandomAccessBuffer:
         f.write(bytes)
         f.close()
 
-
     def addFile(self, dataset_name, filepath, metadata={}):
         """
         Adds a file
@@ -351,7 +358,9 @@ class RandomAccessBuffer:
             raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError(
+                "Metadata are optional but must be a dictionnary when provided."
+            )
 
         # Make sure we can create a metadata object that can be understood by another language (JS)
         # by converting nmpy arrays to list
@@ -366,15 +375,16 @@ class RandomAccessBuffer:
             "filePath": filepath,
             "metadata": safe_meta,
             "codecMeta": {
-                "byteOffset": None, # computed at write time
+                "byteOffset": None,  # computed at write time
                 "byteLength": os.path.getsize(filepath),
-                "type": TYPES.BUFFER
-            }
+                "type": TYPES.BUFFER,
+            },
         }
         self._rab_index.append(dataset_meta)
 
-
-    def addNumericalDataset(self, dataset_name, data, metadata={}, compress=None, order="C"):
+    def addNumericalDataset(
+        self, dataset_name, data, metadata={}, compress=None, order="C"
+    ):
         """
         Add a Numpy array/ndarray
         """
@@ -382,8 +392,10 @@ class RandomAccessBuffer:
             raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
-        
+            raise ValueError(
+                "Metadata are optional but must be a dictionnary when provided."
+            )
+
         # Make sure we can create a metadata object that can be understood by another language (JS)
         # by converting nmpy arrays to list
         safe_meta = Tools.make_safe_object(metadata)
@@ -412,15 +424,17 @@ class RandomAccessBuffer:
             "filePath": file_path,
             "metadata": safe_meta,
             "codecMeta": {
-                "shape": list(data.shape), # rather than using dimension. Even with array 1D, shape is a list (eg. [2, 2], or [12], etc.)
+                "shape": list(
+                    data.shape
+                ),  # rather than using dimension. Even with array 1D, shape is a list (eg. [2, 2], or [12], etc.)
                 "strides": strides,
-                "byteOrder": order, # not relevant if "dimensions" is 1
-                "byteOffset": None, # computed at write time
+                "byteOrder": order,  # not relevant if "dimensions" is 1
+                "byteOffset": None,  # computed at write time
                 "byteLength": byte_length,
                 "type": data.dtype.name,
-                "endianness":Tools.getNumpyArrayEndianness(data),
+                "endianness": Tools.getNumpyArrayEndianness(data),
                 "compression": compress,
-            }
+            },
         }
 
         self._rab_index.append(dataset_meta)
@@ -431,7 +445,6 @@ class RandomAccessBuffer:
         f.write(bytes)
         f.close()
 
-
     def addBuffer(self, dataset_name, data, metadata={}, compress=None):
         """
         Add a generic buffer (bytes)
@@ -440,7 +453,9 @@ class RandomAccessBuffer:
             raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError(
+                "Metadata are optional but must be a dictionnary when provided."
+            )
 
         # Make sure we can create a metadata object that can be understood by another language (JS)
         # by converting nmpy arrays to list
@@ -464,11 +479,11 @@ class RandomAccessBuffer:
             "filePath": file_path,
             "metadata": safe_meta,
             "codecMeta": {
-                "byteOffset": None, # computed at write time
+                "byteOffset": None,  # computed at write time
                 "byteLength": byte_length,
                 "type": TYPES.BUFFER,
                 "compression": compress,
-            }
+            },
         }
 
         self._rab_index.append(dataset_meta)
@@ -479,13 +494,14 @@ class RandomAccessBuffer:
         f.write(bytes)
         f.close()
 
-
     def addText(self, dataset_name, data, metadata={}, compress=None):
         if self.hasDataset(dataset_name):
             raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError(
+                "Metadata are optional but must be a dictionnary when provided."
+            )
 
         if not isinstance(data, str):
             raise ValueError("The dataset must be a string.")
@@ -514,11 +530,11 @@ class RandomAccessBuffer:
             "filePath": file_path,
             "metadata": safe_meta,
             "codecMeta": {
-                "byteOffset": None, # computed at write time
+                "byteOffset": None,  # computed at write time
                 "byteLength": byte_length,
                 "type": TYPES.TEXT,
                 "compression": compress,
-            }
+            },
         }
 
         self._rab_index.append(dataset_meta)
@@ -529,13 +545,21 @@ class RandomAccessBuffer:
         f.write(bytes)
         f.close()
 
-
-    def addDataframe(self, dataset_name, data, metadata={}, compress=None, force_type_compatibility = True):
+    def addDataframe(
+        self,
+        dataset_name,
+        data,
+        metadata={},
+        compress=None,
+        force_type_compatibility=True,
+    ):
         if self.hasDataset(dataset_name):
             raise KeyError("The dataset {} already exists.".format(dataset_name))
 
         if metadata and not type(metadata) is dict:
-            raise ValueError("Metadata are optional but must be a dictionnary when provided.")
+            raise ValueError(
+                "Metadata are optional but must be a dictionnary when provided."
+            )
 
         if not isinstance(data, pd.DataFrame):
             raise ValueError("The dataset must be a Pandas DataFrame.")
@@ -561,14 +585,14 @@ class RandomAccessBuffer:
         column_info = []
 
         # This is holding all the bytes
-        byte_arr = b''
+        byte_arr = b""
 
         # For each column (by their name), we test what is the type being used
         # and replace the 64 bit data by 32 bits counterparts
         for col_name in df:
             data = df[col_name].to_numpy()
             item = {
-            "key": col_name,
+                "key": col_name,
             }
 
             # special case for strings: we check which one is the longest (in bytes within the )
@@ -579,15 +603,19 @@ class RandomAccessBuffer:
                 data = data.tolist()
                 test_str_arr = data
                 # get the bytesize of the longest string
-                max_byte_size =  df[col_name].str.encode(encoding='utf-8').str.len().max()
-                item["maxByteSize"] = int(max_byte_size) # avod having single numbers being left as numpy int64
+                max_byte_size = (
+                    df[col_name].str.encode(encoding="utf-8").str.len().max()
+                )
+                item["maxByteSize"] = int(
+                    max_byte_size
+                )  # avod having single numbers being left as numpy int64
                 # expand each string to the same max size
                 for i in range(0, len(data)):
                     s = data[i]
-                    s_byte_size = len(s.encode('utf-8'))
-                    data[i] = s + (max_byte_size - s_byte_size) * '\0'
-                    byte_arr += data[i].encode('utf-8')
-        
+                    s_byte_size = len(s.encode("utf-8"))
+                    data[i] = s + (max_byte_size - s_byte_size) * "\0"
+                    byte_arr += data[i].encode("utf-8")
+
             # special case for booleans: saved as uint8
             elif data.dtype == bool:
                 item["endianess"] = Tools.getNumpyArrayEndianness(data)
@@ -623,7 +651,9 @@ class RandomAccessBuffer:
 
             # Data is of an unsupported type
             else:
-                raise ValueError(f"Column {col_name} is of an unsupported type: {np.dtype(data.dtype).name}")
+                raise ValueError(
+                    f"Column {col_name} is of an unsupported type: {np.dtype(data.dtype).name}"
+                )
 
             column_info.append(item)
 
@@ -638,14 +668,14 @@ class RandomAccessBuffer:
             "filePath": file_path,
             "metadata": safe_meta,
             "codecMeta": {
-                "byteOffset": None, # computed at write time
+                "byteOffset": None,  # computed at write time
                 "byteLength": byte_length,
                 "type": TYPES.DATAFRAME,
                 "compression": compress,
                 "rows": nb_row,
                 "columns": nb_col,
                 "columnInfo": column_info,
-            }
+            },
         }
 
         self._rab_index.append(dataset_meta)
@@ -656,8 +686,16 @@ class RandomAccessBuffer:
         f.write(byte_arr)
         f.close()
 
-
-    def addDataset(self, dataset_name, data=None, metadata=None, filepath=None, compress=None, order="C", force_type_compatibility = True):
+    def addDataset(
+        self,
+        dataset_name,
+        data=None,
+        metadata=None,
+        filepath=None,
+        compress=None,
+        order="C",
+        force_type_compatibility=True,
+    ):
         """
         One add method to rule them all.
         Things happen in the following order:
@@ -669,20 +707,50 @@ class RandomAccessBuffer:
         """
 
         if type(data) == np.ndarray:
-            return self.addNumericalDataset(dataset_name=dataset_name, data=data, metadata=metadata, compress=compress, order=order)
+            return self.addNumericalDataset(
+                dataset_name=dataset_name,
+                data=data,
+                metadata=metadata,
+                compress=compress,
+                order=order,
+            )
         elif isinstance(data, pd.DataFrame):
-            return self.addDataframe(dataset_name=dataset_name, data=data, metadata=metadata, compress=compress, force_type_compatibility=force_type_compatibility)
+            return self.addDataframe(
+                dataset_name=dataset_name,
+                data=data,
+                metadata=metadata,
+                compress=compress,
+                force_type_compatibility=force_type_compatibility,
+            )
         elif isinstance(data, str):
-            return self.addText(dataset_name=dataset_name, data=data, metadata=metadata, compress=compress)
+            return self.addText(
+                dataset_name=dataset_name,
+                data=data,
+                metadata=metadata,
+                compress=compress,
+            )
         elif type(data) == bytes:
-            return self.addBuffer(dataset_name=dataset_name, data=data, metadata=metadata, compress=compress)
+            return self.addBuffer(
+                dataset_name=dataset_name,
+                data=data,
+                metadata=metadata,
+                compress=compress,
+            )
         elif type(data) is dict:
-            return self.addObject(dataset_name=dataset_name, data=data, metadata=metadata, compress=compress)
+            return self.addObject(
+                dataset_name=dataset_name,
+                data=data,
+                metadata=metadata,
+                compress=compress,
+            )
         elif data == None and isinstance(filepath, str):
-            return self.addFile(dataset_name=dataset_name, filepath=filepath, metadata=metadata)
+            return self.addFile(
+                dataset_name=dataset_name, filepath=filepath, metadata=metadata
+            )
         else:
-            raise ValueError("The type of dataset could not be determined: ", type(data))
-
+            raise ValueError(
+                "The type of dataset could not be determined: ", type(data)
+            )
 
     def digNumericalDataset(self, dataset_name, position):
         """
@@ -700,7 +768,9 @@ class RandomAccessBuffer:
             raise ValueError("Only numerical datasets can be dug in.")
 
         if "compression" in codec_meta and codec_meta["compression"] != None:
-            raise ValueError("The dataset is compressed, digging is not possible. You can use .getDataset() and then use it as Numpy array.")
+            raise ValueError(
+                "The dataset is compressed, digging is not possible. You can use .getDataset() and then use it as Numpy array."
+            )
 
         # transform position into a list for consistency
         if type(position) == int or type(position) == float:
@@ -710,38 +780,51 @@ class RandomAccessBuffer:
         if "strides" not in codec_meta:
             codec_meta["strides"] = self._computeStrides(codec_meta)
 
-        print('computed strides', self._computeStrides(codec_meta))
+        print("computed strides", self._computeStrides(codec_meta))
 
         strides = codec_meta["strides"]
         shape = codec_meta["shape"]
         nb_dimensions = len(shape)
         if len(position) != nb_dimensions:
-            raise IndexError("The dataset is {}-dimensional, the position must also have {} dimensions.".format(nb_dimensions, nb_dimensions))
+            raise IndexError(
+                "The dataset is {}-dimensional, the position must also have {} dimensions.".format(
+                    nb_dimensions, nb_dimensions
+                )
+            )
 
         bytes_per_elem = np.dtype(codec_meta["type"]).itemsize
         elements_to_jump = 0
 
         for d in range(0, nb_dimensions):
             if position[d] < 0 or position[d] >= shape[d]:
-                raise IndexError("The position {} is out of range. This axis range is [0, {}]".format(position[d], shape[d]-1))
+                raise IndexError(
+                    "The position {} is out of range. This axis range is [0, {}]".format(
+                        position[d], shape[d] - 1
+                    )
+                )
             elements_to_jump += strides[d] * position[d]
 
         byte_offset_from_dataset_start = int(bytes_per_elem) * elements_to_jump
-        byte_offset = self._data_byte_offset + codec_meta["byteOffset"] + byte_offset_from_dataset_start
+        byte_offset = (
+            self._data_byte_offset
+            + codec_meta["byteOffset"]
+            + byte_offset_from_dataset_start
+        )
 
         f = open(self._filepath, "rb")
         f.seek(byte_offset)
         buffer = f.read(bytes_per_elem)
         f.close()
 
-        unpack_seq = SHORT_ENDIANNESS[codec_meta["endianness"]] + UNPACK_TYPES[codec_meta["type"]]
+        unpack_seq = (
+            SHORT_ENDIANNESS[codec_meta["endianness"]]
+            + UNPACK_TYPES[codec_meta["type"]]
+        )
 
         value = struct.unpack(unpack_seq, buffer)
         # if codec_meta["byteOrder"] == 'C'
 
         return value[0]
-
-
 
     def digInBuffer(self, dataset_name, byte_offset, byte_length):
         """
@@ -760,7 +843,9 @@ class RandomAccessBuffer:
         if byte_offset < 0 or (byte_offset + byte_length) > codec_meta["byteLength"]:
             raise IndexError("The byte offset and byte length are out of range")
 
-        total_byte_offset = self._data_byte_offset + codec_meta["byteOffset"] + byte_offset
+        total_byte_offset = (
+            self._data_byte_offset + codec_meta["byteOffset"] + byte_offset
+        )
 
         f = open(self._filepath, "rb")
         f.seek(total_byte_offset)
@@ -768,11 +853,6 @@ class RandomAccessBuffer:
         f.close()
 
         return buffer
-
-
-
-
-
 
     def _computeStrides(self, codec_meta):
         """
@@ -787,9 +867,8 @@ class RandomAccessBuffer:
         for d in range(1, nb_dimensions):
             strides.append(strides[-1] * shape[-d])
 
-        strides.reverse() # the strides are now in the same order as the shape
+        strides.reverse()  # the strides are now in the same order as the shape
         return strides
-
 
     def hasDataset(self, dataset_name):
         """
@@ -799,7 +878,6 @@ class RandomAccessBuffer:
             if entry["name"] == dataset_name:
                 return True
         return False
-
 
     def read(self, filepath):
         """
@@ -813,7 +891,7 @@ class RandomAccessBuffer:
             raise ValueError("The file is not a RandomAccessBuffer.")
 
         # reading the index
-        header_bytelength = struct.unpack('I', f.read(4))[0]
+        header_bytelength = struct.unpack("I", f.read(4))[0]
 
         # Try decoding in yaml, if fails, back to json (as the spec of RAB was originally using json)
         header_str = f.read(header_bytelength).decode("utf-8", "strict")
@@ -827,7 +905,6 @@ class RandomAccessBuffer:
 
         f.close()
 
-
     def _updateOffsets(self):
         """
         Updates the offsets based on the order of the datasets
@@ -836,7 +913,6 @@ class RandomAccessBuffer:
         for entry in self._rab_index:
             entry["codecMeta"]["byteOffset"] = offset
             offset += entry["codecMeta"]["byteLength"]
-
 
     def write(self, filepath):
         self._updateOffsets()
@@ -857,7 +933,9 @@ class RandomAccessBuffer:
         # Note: the header is padded with a new line and a new line char is also
         # added at the end (before encoding) to ensure better readability of the
         # header with CLIs such as less/more
-        byte_metadata = ("\n" + yaml.dump(index_copy, Dumper=yaml.Dumper, allow_unicode=True) + "\n").encode("utf-8", "strict")
+        byte_metadata = (
+            "\n" + yaml.dump(index_copy, Dumper=yaml.Dumper, allow_unicode=True) + "\n"
+        ).encode("utf-8", "strict")
         metadata_byte_length = len(byte_metadata)
 
         # write the metadata file
@@ -882,10 +960,9 @@ class RandomAccessBuffer:
         #
         # out_file.close()
 
-
         with open(filepath, "w+b") as out_file:
             out_file.write(MAGIC_NUMBER.encode())
-            out_file.write(struct.pack('I', metadata_byte_length))
+            out_file.write(struct.pack("I", metadata_byte_length))
 
             # writing all the files by block
             for tempfile_path in files_to_add:
@@ -897,12 +974,12 @@ class RandomAccessBuffer:
                     else:
                         break
 
-
     def clean(self):
         """
         Clean all the temporary files
         """
         shutil.rmtree(self._working_dir, ignore_errors=True)
+
 
 """
 Write piece by piece: https://stackoverflow.com/questions/5509872/python-append-multiple-files-in-given-order-to-one-big-file/18277956

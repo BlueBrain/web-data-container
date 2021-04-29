@@ -4,16 +4,11 @@ before_script:
   - python -v
   - pip install -r requirements.txt
   - pip install -r test-requirements.txt
-  - pip install -r docs/requirements.txt
-  # - make -C docs html
-
 
 stages:
-  - test
+  - runTests
   
-pytest:
-  stage: test
-  image: "python:3.8"
+runTests:
   coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
   script:
-    - python setup.py test
+    - pytest
