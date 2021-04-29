@@ -11,4 +11,4 @@ test:
   coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
   script:
     # - python setup.py test
-    - pytest
+    - pytest --cov randomaccessbuffer
