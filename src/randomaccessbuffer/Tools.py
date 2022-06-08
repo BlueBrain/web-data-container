@@ -88,7 +88,9 @@ class CustomJsonEncoder(json.JSONEncoder):
         """
         Overload of the default interface to swap every np.ndarray with their list counterpart.
         """
-        if isinstance(obj, np.ndarray):
+        if isinstance(obj, np.generic):
+            return obj.item()
+        elif isinstance(obj, np.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
 

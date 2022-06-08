@@ -1,18 +1,18 @@
 # Random Access Buffer
-This repository contains the Python codec for RandomAccessBuffer (RAB) file format  
+This repository contains the Python codec for RandomAccessBuffer (RAB) file format.  
 
 # What's RAB?
-RAB is a container format, rather generic but originally thought for containing scientific datasets where precision and integrity matters. It is close to HDF5 and yet very far. It can handle multiple datasets with their metadata ubt contrary to HDF5 it is very easy to decode, even from within a web browser in JS.
+RAB is a container format, rather generic but originally thought for containing scientific datasets where precision and integrity matters. It is close to HDF5 and yet very far. It can handle multiple datasets with their metadata but contrary to HDF5 it is very easy to decode or write a parser for, even from within a web browser in native JS.
 
 # Features
 - multi-dataset, multi modality
 - Each dataset is identified by a string of the user's choice. This name or id is unique in a RAB file
 - Optimised for numerical typed datasets (single numbers and arrays or numbers, multidimensional, any type from uint8 to float64)
-- Datasets can be objects (utf-8 JSON, binary encoded, optionally compressed)
+- Datasets can be objects (utf-8 YAML, binary encoded, optionally compressed)
 - Datasets can be text (utf-8, binary encoded, optionally compressed)
 - Datasets can be blobs/bytes/files, just like an archive (optionally compressed)
-- Datasets can be tablar data (i.g. Pandas Dataframe fonr a CSV file) with columns of viarious types (optionally compressed)
-- Each dataset can be linked to as many metadata as necessary (utf-8 JSON, with arrays, complex objects, numbers and strings)
+- Datasets can be spreadsheet data (i.g. Pandas Dataframe from a CSV file) with columns of viarious types (optionally compressed)
+- Each dataset can be linked to as many metadata as necessary (utf-8 YAML, with arrays, complex objects, numbers and strings)
 - Fast random access to any dataset: no need to read/parse the whole file to access a specific dataset
 - Deep random access within numerical datasets: can pick a single value within a numerical dataset, given its N-dimensional position, without having to load the whole dataset in memory (good for lookups)
 - Self-describing, schemaless
@@ -32,94 +32,77 @@ Pratically anything, but here are some ideas:
 
 Then, RAB is a container format, it does not have to have the .rab extension, you can base your own file format on RAB, apply a structure very specific to your usage and call it anything you want!
 
-# Install
-TODO
-
-# Usage
-TODO
-
 # Format description
 ## Overview
 The RAB format is structured as follow:
 
 - **Magic number**: to quickly identify the file as a RAB file (ASCII, 3 bytes: "rab")
-- **Header byte size**: the size of the JSON encoded header that comes just after, to easily grab it in a single take (uint32, 4 bytes)
-- **Header**: JSON with indentation, human readable. Act as an index to locate the datasets and store additional user metadata per dataset (utf-8, variable byte length, see above)
+- **Header byte size**: the size of the YAML encoded header that comes just after, to easily grab it in a single take (uint32, 4 bytes)
+- **Header**: YAML payload because it's more human readable than JSON. Act as an index to locate the datasets and store additional user metadata per dataset (utf-8, variable byte length, see above)
 - **First dataset**: the first dataset buffer (array of numbers, text, serialized object, file)
 - **Second dataset**: the second dataset buffer (array of numbers, text, serialized object, file)
 - the other datasets...
 
 
 ## Header
-The header is JSON encoded for human-readability. Imagine typing `$ less my_file.rab` in a terminal and know the content of the rab file directly. The header contains multiple kinds of informations per dataset and the datasets are organized a a top lovel structure into an array. For each dataset of the array, there is a:
-
-- **name** (string):  the name of the dataset, must be unique in the file
-- **codecMeta** (object): an index of each datasets, where to find them in the file and how long they are, etc. This is controlled by the codec, a user cannot modify it.
-- **metadata** (object): an additional metadata a user may want to attach to a given dataset
+The header is YAML encoded for human-readability. Imagine typing `$ less my_file.rab` in a terminal and know the content of the rab file directly. The header contains multiple kinds of informations per dataset and the datasets are organized a a top lovel structure into an array. For each dataset of the array, there is a:
 
 The following example is the header of a dataset that contains images, a bit like a regular archive would, but with extra metadata:
 
-```json
-[
-  {
-    "name": "Dürer's Rhino",
-    "metadata": {
-      "year": 1515,
-      "artist": "Albrecht Dürer",
-      "title": "Rhinoceros",
-      "wikipedia link": "https://en.wikipedia.org/wiki/D%C3%BCrer%27s_Rhinoceros",
-      "originalFileName": "rhinoceros.jpg"
-    },
-    "codecMeta": {
-      "byteOffset": 0,
-      "byteLength": 626248,
-      "type": "bytes"
-    }
-  },
-  {
-    "name": "Dürer's Young Hare",
-    "metadata": {
-      "year": 1502,
-      "artist": "Albrecht Dürer",
-      "title": "Young Hare",
-      "wikipedia link": "https://en.wikipedia.org/wiki/Young_Hare",
-      "originalFileName": "young_hare.jpg"
-    },
-    "codecMeta": {
-      "byteOffset": 626248,
-      "byteLength": 938686,
-      "type": "bytes"
-    }
-  },
-  {
-    "name": "Landseer's Stag",
-    "metadata": {
-      "year": 1851,
-      "artist": "Sir Edwin Landseer",
-      "title": "Monarch of the Glen",
-      "wikipedia link": "https://en.wikipedia.org/wiki/The_Monarch_of_the_Glen_(painting)",
-      "originalFileName": "monarch_of_the_glen.png"
-    },
-    "codecMeta": {
-      "byteOffset": 1564934,
-      "byteLength": 4879645,
-      "type": "bytes"
-    }
-  }
-]
+```yaml
+- codecMeta:
+    byteLength: 626248
+    byteOffset: 0
+    compression: null
+    type: bytes
+  metadata:
+    artist: Albrecht Dürer
+    originalFileName: rhinoceros.jpg
+    title: Rhinoceros
+    wikipedia link: https://en.wikipedia.org/wiki/D%C3%BCrer%27s_Rhinoceros
+    year: 1515
+  name: Dürer's Rhino
+- codecMeta:
+    byteLength: 938686
+    byteOffset: 626248
+    compression: null
+    type: bytes
+  metadata:
+    artist: Albrecht Dürer
+    originalFileName: young_hare.jpg
+    title: Young Hare
+    wikipedia link: https://en.wikipedia.org/wiki/Young_Hare
+    year: 1502
+  name: Dürer's Young Hare
+- codecMeta:
+    byteLength: 4879645
+    byteOffset: 1564934
+    compression: null
+    type: bytes
+  metadata:
+    artist: Sir Edwin Landseer
+    originalFileName: monarch_of_the_glen.png
+    title: Monarch of the Glen
+    wikipedia link: https://en.wikipedia.org/wiki/The_Monarch_of_the_Glen_(painting)
+    year: 1851
+  name: Landseer's Stag
 ```
 
-The **metadata** objects are a regular JSON objects and can be empty if a user does provide only data without metadata. It will be empty but it will style be present as `{}` for consistency.
+The **name** (string):  the name of the dataset, must be unique in the file because it will act as an ID on decode/query time  
+
+The **metadata** objects are a regular YAML objects and can be empty if a user does provide only data without metadata. It will be empty but it will style be present as `{}` for consistency.
 
 The **codecMeta** is controlled by the RAB codec and is not exposed to the user, except if the file is open in text mode. Depending on the type of dataset, **codecMeta** will contain different properties, though, some are always present:
+
+Then, inside the **codecMeta** you can fine...   
 
 - **type** (string): defines the type of data encoded in the dataset. Can be "text", "bytes", "object" or one the numerical types ("bool", "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float16", "float32", "float64", "complex64", "complex128")
 - **byteOffset** (int): the offset in byte, where this dataset begins, starting from the first byte following the end of the index
 - **byteLength** (int): the size of the dataset in number of bytes
 
-*Note:* if the numerical type is chosen, it is usually for encoding more than a single number. In python, this is used to serialize entire numpy *ndarrays* (multi-dimensional arrays) such as time series, images data, volume, volume + t, etc.
+*Note:* if the numerical type is chosen, it is usually for encoding more than a single number. In python, this is used to serialize entire numpy *ndarrays* (multi-dimensional arrays) such as time series, images data, volume, volume + t, etc. In JavaScript, those will be backed by [TypedArrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays).
 
-Other codecMeta properties for each type:
+Other **codecMeta** properties for each type:
 
 - **type** *"text"*
   - **compression** (string|null): can be None or "gzip" , tell if the creator of the file asked for their dataset to be compressed or not
@@ -134,15 +117,13 @@ Other codecMeta properties for each type:
   - **endianness** (string): can be "little" or "big" (read more about it here)
   - **compression** (string|null): can be None or "gzip" , tell if the creator of the file asked for their dataset to be compressed or not
 
-The **stride** information of numerical datasets is complementary to the **shape** information and could be generated at read time but we chose to have it part of the metadata to make it faster. If **strides** happens to be missing for a multidimensional dataset, it will be computed.
+The **stride** information of numerical datasets is complementary to the **shape** information and could be generated at read time but we chose to have it part of the metadata to make it faster. If **strides** happen to be missing for a multidimensional dataset, they will be computed.
 
 # Python Code Sample
-First, the Python package randomaccessbuffer must be installed from [this repository](https://bbpcode.epfl.ch/code/#/admin/projects/dke/randomaccessbufferpy):
+First, the Python package randomaccessbuffer must be installed from [this repository](https://bbpgitlab.epfl.ch/dke/randomaccessbufferpy):
 
 ```bash
-git clone https://lurie@bbpcode.epfl.ch/code/a/dke/randomaccessbufferpy
-cd randomaccessbufferpy
-pip install .
+pip install git+https://bbpgitlab.epfl.ch/dke/randomaccessbufferpy.git
 ```
 
 Then in a Python file or notebook:
@@ -159,6 +140,7 @@ my_rab = RandomAccessBuffer()
 # build a simple array
 data = np.array([0, 1, 2, 3, 4, 5, 6, 7], dtype="int32")
  
+# You can add some metadata to go with the dataset (optional)
 metadata = {
     "description": "This array is a test array é ï"
 }
@@ -170,7 +152,7 @@ my_rab.addDataset("my wee array", data=data, metadata=meta)
 my_rab.write("./some_file.rab")
 ```
 
-**Create a RandomAccessBuffer with various things inside**
+**Create a RandomAccessBuffer with multiple things inside**
 ```python
 import numpy as np
 import randomaccessbuffer as rab
@@ -292,7 +274,8 @@ for id in dataset_ids:
 More examples can be found in the **tests** directory of this repository.
 
 # Examples
-As a reference, many examples can be found in the `examples` folder. Some are using data generated from the source itself, some others are using input files.
+As a reference, many examples can be found in the [examples](example) folder. Some are using data generated from the source itself, some others are using input files.
+
 
 # Comparison
 Before even having the intention to create the RandomAccessBuffer format, we looked what was available, but it turns out none of the format below was capable to handle what we needed. The main feature we were looking for were:
@@ -336,3 +319,13 @@ Here is the list of candidates we considered:
   - No random access
 
 This comparison is of course not complete and most often stops at the first missing feature found.
+
+# Future
+Things to improve:
+- in order to create files tat are not limited by amount of RAM, this codec writes files down to disk in temps files (those are deleted aftwards by the codec). In order to identify the temps buffers, their temps file names is an urlencoded version of the ID of the dataset. This works fine as long as not mutliple RAB files are being encoded at the same time that would contain dataset with the same ID. This design must be improved, maybe using a top folder with uuid v4 names where to put all the temp datasets for a single instance of RAB.
+
+- The YAML encoding of object that can potentially contain elements that do not play well with other serialization languages (ie. Numpy arrays) is an issue addressed in the `Tool.make_safe_object()` function. Yet, this requires an intermediate step where data are safely converted to JSON, then back to a Python dictionnary and eventualy to YAML. Even though this produces the expected result, it would be better/faster to extend the YAML encoder directly.
+
+- It would be nice that the `codeMeta` object of each dataset contains a checksum of the binary-encoded/compressed version of the dataset's buffer. This could be sha-256 or an alternative, as long as every platform/language we want to use RAB on has an equivalent method to do the job. It's probably not an issue to find a Python package to create a sha-256 hash and for JS [this](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest) seems to be an option. Then, RAB codec would have a built-in integrity check. In the meantime, this can still be performed "manually" and the hash be stored in the **dataset** object that goes in pair with each **dataset**. Less convenient tho!
+
+- Object encoding for actual object payloads (and not metadata) could leverage a more performant type-preserving serialization. This could be a binary object serialization rather than a text-based one, but those usualy work in pair with schemas, which we want to avoid here (a user should not be required to provide a schemas to encode its objects). Alternatively, the "type-preserving" part could be achieved by a specific YAML encoding but not sure this task is easy, especially with a mutiplatform constraint. The Pickle encoder for dictionary could a nice inspiration.
