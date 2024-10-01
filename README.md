@@ -131,14 +131,14 @@ information and could be generated at read time, but we chose to have it part of
 metadata to make it faster. If **strides** happen to be missing for a multidimensional 
 dataset, they will be computed.
 
-# Python Code Sample
-First, the Python package randomaccessbuffer must be installed from [this repository](https://bbpgitlab.epfl.ch/dke/randomaccessbufferpy):
+# Install
+First, the Python package 'randomaccessbuffer' must be installed from [this repository](https://bbpgitlab.epfl.ch/dke/randomaccessbufferpy):
 
 ```bash
-pip install git+https://bbpgitlab.epfl.ch/dke/randomaccessbufferpy.git
+pip install .
 ```
 
-Then in a Python file or notebook:
+# Examples
 
 **Create a RAB file with a Numpy array inside**
 ```python
@@ -277,11 +277,8 @@ for d_id in dataset_ids:
         # data is an array of type <numpy.ndarray>, do something with it ...
 ```
 
-More examples can be found in the **tests** directory of this repository.
-
-# Examples
-As a reference, many examples can be found in the `examples` folder. Some are 
-using data generated from the source itself, some others are using input files.
+More examples can be found in the `examples` and `tests` directories of this repository.
+Some are using data generated from the source itself, some others are using input files.
 
 
 # Comparison
@@ -362,3 +359,10 @@ to avoid here (a user should not be required to provide a schemas to encode its 
 Alternatively, the "type-preserving" part could be achieved by a specific YAML encoding 
 but not sure this task is easy, especially with a multiplatform constraint. The Pickle 
 encoder for dictionary could a nice inspiration.
+
+# Funding & Acknowledgment
+The development of this software was supported by funding to the Blue Brain Project, a 
+research center of the École polytechnique fédérale de Lausanne (EPFL), from the Swiss 
+government’s ETH Board of the Swiss Federal Institutes of Technology.
+
+Copyright © 2020-2024 Blue Brain Project/EPFL
